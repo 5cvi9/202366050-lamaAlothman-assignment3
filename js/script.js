@@ -192,46 +192,57 @@ const projectCards = document.querySelectorAll(".project-card");
 const projectSearch = document.getElementById("project-search");
 const noProjects = document.getElementById("no-projects");
 const clearSearch = document.getElementById("clear-search");
+const projectSort = document.getElementById("project-sort");
+const projectsGrid = document.querySelector("#projects .projects-grid");
 
 let currentFilter = "all";
+// Preserve the original project order
+const originalOrder = Array.from(projectCards);
 
 // Show projects matching both the category and search keyword
 function updateProjects() {
     const searchText = projectSearch.value.trim().toLowerCase();
+    const sortValue = projectSort.value;
+
+    const getTitle = card => card.querySelector("h3").textContent.trim();
+
+    const sorters = {
+        "name-asc": (a, b) => getTitle(a).localeCompare(getTitle(b)),
+        "name-desc": (a, b) => getTitle(b).localeCompare(getTitle(a)),
+        "newest": (a, b) => b.dataset.date.localeCompare(a.dataset.date),
+        "oldest": (a, b) => a.dataset.date.localeCompare(b.dataset.date),
+    };
+
+    const sortedCards = Array.from(projectCards);
+    sortedCards.sort(sorters[sortValue] || (() => 0));
+
+    // Apply sorted order to the DOM
+    projectsGrid.append(...sortedCards);
+
+    // Apply category filtering and keyword search
     let visibleCount = 0;
 
-    projectCards.forEach(function (card) {
+    sortedCards.forEach(card => {
+        const text = (
+            card.querySelector("h3").textContent + " " +
+            card.querySelector("p").textContent
+        ).toLowerCase();
 
         const matchesCategory =
-            currentFilter === "all" ||
-            card.dataset.category === currentFilter;
-
-        // Search within project title and description
-        const projectTitle = card.querySelector("h3").textContent;
-        const projectDescription = card.querySelector("p").textContent;
-
-        const projectText =
-            (projectTitle + " " + projectDescription).toLowerCase();
-
-        const matchesSearch = projectText.includes(searchText);
-
+            currentFilter === "all" || card.dataset.category === currentFilter;
+        const matchesSearch = text.includes(searchText);
         const shouldShow = matchesCategory && matchesSearch;
 
-        // Show or hide the project
         card.hidden = !shouldShow;
-
-        // Restart the fade-in animation
         card.classList.remove("filter-animate");
 
         if (shouldShow) {
             visibleCount++;
-
-            void card.offsetWidth;
+            void card.offsetWidth; 
             card.classList.add("filter-animate");
         }
     });
 
-    // Display feedback if no projects match
     noProjects.hidden = visibleCount !== 0;
 }
 
@@ -255,6 +266,8 @@ filterButtons.forEach(function (button) {
 
 // Search projects as the user types
 projectSearch.addEventListener("input", updateProjects);
+// Update projects when the sorting option changes
+projectSort.addEventListener("change", updateProjects);
 
 // Reset both search and category filter
 clearSearch.addEventListener("click", function () {
