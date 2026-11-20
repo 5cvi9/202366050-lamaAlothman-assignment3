@@ -275,3 +275,74 @@ clearSearch.addEventListener("click", function () {
 
 // Display all projects when the page loads
 updateProjects();
+
+// GITHUB API INTEGRATION
+
+const GITHUB_USERNAME = "5cvi9";
+const MAX_REPOS = 6;
+
+const grid = document.getElementById("github-grid");
+const status = document.getElementById("github-status");
+const retryBtn = document.getElementById("github-retry");
+
+function setStatus(message, { showRetry = false } = {}) {
+    status.textContent = message;
+    status.hidden = !message;
+    retryBtn.hidden = !showRetry;
+}
+
+function createCard({ name, description, language, html_url }) {
+    const card = document.createElement("article");
+    card.className = "project-card";
+
+    const title = document.createElement("h3");
+    title.textContent = name;
+
+    const desc = document.createElement("p");
+    desc.textContent = description || "No description available.";
+
+    const lang = document.createElement("p");
+    lang.className = "project-info";
+    lang.textContent = `Language: ${language || "Not specified"}`;
+
+    const link = Object.assign(document.createElement("a"), {
+        href: html_url,
+        textContent: "View on GitHub",
+        target: "_blank",
+        rel: "noopener noreferrer",
+    });
+
+    card.append(title, desc, lang, link);
+    return card;
+}
+
+async function loadRepos() {
+    setStatus("Loading repositories...");
+    grid.replaceChildren();
+
+    try {
+        const res = await fetch(
+            `https://api.github.com/users/${GITHUB_USERNAME}/repos?per_page=100&sort=updated`
+        );
+        if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
+
+        const repos = (await res.json())
+            .filter(repo => !repo.fork)
+            .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
+            .slice(0, MAX_REPOS);
+
+        if (repos.length === 0) {
+            setStatus("No public repositories available yet.");
+            return;
+        }
+
+        grid.append(...repos.map(createCard));
+        setStatus("");
+    } catch (error) {
+        console.error("Failed to load GitHub repositories:", error);
+        setStatus("Unable to load repositories. Please try again.", { showRetry: true });
+    }
+}
+
+retryBtn.addEventListener("click", loadRepos);
+loadRepos();
