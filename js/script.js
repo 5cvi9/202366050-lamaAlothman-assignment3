@@ -195,7 +195,27 @@ const clearSearch = document.getElementById("clear-search");
 const projectSort = document.getElementById("project-sort");
 const projectsGrid = document.querySelector("#projects .projects-grid");
 
-let currentFilter = "all";
+// Restore saved project preferences
+const VALID_CATEGORIES = ["all", "development", "design"];
+const VALID_SORTS = ["default", "name-asc", "name-desc"];
+
+function getSavedOption(key, validValues, fallback) {
+    const saved = localStorage.getItem(key);
+    return validValues.includes(saved) ? saved : fallback;
+}
+
+let currentFilter = getSavedOption(
+    "portfolio-category",
+    VALID_CATEGORIES,
+    "all"
+);
+
+projectSort.value = getSavedOption(
+    "portfolio-sort",
+    VALID_SORTS,
+    "default"
+);
+
 // Preserve the original project order
 const originalOrder = Array.from(projectCards);
 
@@ -209,11 +229,9 @@ function updateProjects() {
     const sorters = {
         "name-asc": (a, b) => getTitle(a).localeCompare(getTitle(b)),
         "name-desc": (a, b) => getTitle(b).localeCompare(getTitle(a)),
-        "newest": (a, b) => b.dataset.date.localeCompare(a.dataset.date),
-        "oldest": (a, b) => a.dataset.date.localeCompare(b.dataset.date),
     };
 
-    const sortedCards = Array.from(projectCards);
+    const sortedCards = Array.from(originalOrder);
     sortedCards.sort(sorters[sortValue] || (() => 0));
 
     // Apply sorted order to the DOM
@@ -252,6 +270,9 @@ filterButtons.forEach(function (button) {
     button.addEventListener("click", function () {
         currentFilter = button.dataset.filter;
 
+        // Save selected category
+        localStorage.setItem("portfolio-category", currentFilter);
+
         // Update the active button
         filterButtons.forEach(function (btn) {
             const isActive = btn === button;
@@ -267,13 +288,17 @@ filterButtons.forEach(function (button) {
 // Search projects as the user types
 projectSearch.addEventListener("input", updateProjects);
 // Update projects when the sorting option changes
-projectSort.addEventListener("change", updateProjects);
+projectSort.addEventListener("change", function () {
+    localStorage.setItem("portfolio-sort", projectSort.value);
+    updateProjects();
+});
 
-// Reset both search and category filter
+// Reset search and category filter
 clearSearch.addEventListener("click", function () {
-
     projectSearch.value = "";
     currentFilter = "all";
+
+    localStorage.setItem("portfolio-category", "all");
 
     filterButtons.forEach(function (btn) {
         const isActive = btn.dataset.filter === "all";
@@ -284,6 +309,14 @@ clearSearch.addEventListener("click", function () {
 
     updateProjects();
     projectSearch.focus();
+});
+
+// Restore the selected category button
+filterButtons.forEach(function (button) {
+    const isActive = button.dataset.filter === currentFilter;
+
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-pressed", String(isActive));
 });
 
 // Display all projects when the page loads
