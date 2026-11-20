@@ -30,6 +30,7 @@
 .project-card[hidden] {
     display: none;
 }
+
 /* FORM VALIDATION AND FEEDBACK */
 
 /* Error text displayed below invalid fields */
@@ -56,6 +57,7 @@ form .input-error:focus {
     outline: 2px solid #b42318;
     outline-offset: 2px;
 }
+
 /* PROJECT FILTER ANIMATION*/
 
 /* Smoothly reveal projects after filtering */
@@ -81,6 +83,7 @@ form .input-error:focus {
         animation: none;
     }
 }
+
 /* FORM FEEDBACK ANIMATION */
 
 #form-message.success-message {
@@ -105,6 +108,7 @@ form .input-error:focus {
         animation: none;
     }
 }
+
 /* ERROR HANDLING AND USER FEEDBACK */
 
 #form-message.form-error {
@@ -118,6 +122,7 @@ form input,
 form textarea {
     transition: border-color 0.2s ease, outline-color 0.2s ease;
 }
+
 /* PROJECT SEARCH AND EMPTY STATE */
 
 .project-search {
@@ -183,6 +188,7 @@ form textarea {
 .empty-state button:hover {
     background: var(--green);
 }
+
 /* DARK MODE FILTER BUTTONS */
 
 body:not(.light-mode) .filter-btn.active,
@@ -193,6 +199,7 @@ body:not(.light-mode) .filter-btn:hover {
 body:not(.light-mode) .empty-state button {
     color: #10232c;
 }
+
 /* ========================================
    PROJECT SORTING
 ======================================== */
@@ -243,7 +250,7 @@ body:not(.light-mode) .empty-state button {
     font-size: 2.4rem;
 }
 
-#github-repositories > p:not(.label) {
+#github-repositories>p:not(.label) {
     margin-bottom: 30px;
     color: var(--muted);
 }
@@ -259,7 +266,7 @@ body:not(.light-mode) .empty-state button {
     overflow-wrap: anywhere;
 }
 
-#github-grid .project-card > p {
+#github-grid .project-card>p {
     margin-bottom: 0;
 }
 
