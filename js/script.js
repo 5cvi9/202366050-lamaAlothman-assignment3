@@ -359,19 +359,33 @@ function createCard({ name, description, language, html_url }) {
     return card;
 }
 
+
 async function loadRepos() {
     setStatus("Loading repositories...");
     grid.replaceChildren();
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000);
+
     try {
         const res = await fetch(
-            `https://api.github.com/users/${GITHUB_USERNAME}/repos?per_page=100&sort=updated`
+            `https://api.github.com/users/${GITHUB_USERNAME}/repos?per_page=100&sort=updated`,
+            { signal: controller.signal }
         );
-        if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
+
+        if (res.status === 403 || res.status === 429) {
+            throw new Error("RATE_LIMIT");
+        }
+
+        if (!res.ok) {
+            throw new Error(`HTTP_${res.status}`);
+        }
 
         const repos = (await res.json())
             .filter(repo => !repo.fork)
-            .sort((a, b) => new Date(b.updated_at) - new Date(a.updated_at))
+            .sort((a, b) =>
+                new Date(b.updated_at) - new Date(a.updated_at)
+            )
             .slice(0, MAX_REPOS);
 
         if (repos.length === 0) {
@@ -381,9 +395,28 @@ async function loadRepos() {
 
         grid.append(...repos.map(createCard));
         setStatus("");
+
     } catch (error) {
         console.error("Failed to load GitHub repositories:", error);
-        setStatus("Unable to load repositories. Please try again.", { showRetry: true });
+
+        if (error.name === "AbortError") {
+            setStatus(
+                "GitHub is taking too long to respond. Please try again.",
+                { showRetry: true }
+            );
+        } else if (error.message === "RATE_LIMIT") {
+            setStatus(
+                "GitHub is temporarily limiting requests. Please try again later.",
+                { showRetry: true }
+            );
+        } else {
+            setStatus(
+                "Unable to load repositories. Check your connection and try again.",
+                { showRetry: true }
+            );
+        }
+    } finally {
+        clearTimeout(timeoutId);
     }
 }
 
