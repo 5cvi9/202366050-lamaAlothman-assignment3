@@ -2,6 +2,11 @@
 // CONTACT FORM VALIDATION
 // ========================================
 
+
+// ========================================
+// CONTACT FORM VALIDATION
+// ========================================
+
 const form = document.getElementById("contact-form");
 const message = document.getElementById("form-message");
 
@@ -9,7 +14,9 @@ const nameInput = document.getElementById("name");
 const emailInput = document.getElementById("email");
 const messageInput = document.getElementById("message");
 
-// Display or clear an error for a specific field
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Display or clear the validation error for a field
 function showError(input, errorId, errorText) {
     const errorElement = document.getElementById(errorId);
 
@@ -18,41 +25,46 @@ function showError(input, errorId, errorText) {
     input.setAttribute("aria-invalid", String(Boolean(errorText)));
 }
 
-// Validate the form when the user submits it
+// Validate one field and return whether it is valid
+function validateField(input) {
+    const value = input.value.trim();
+    let error = "";
+    let errorId = "";
+
+    if (input === nameInput) {
+        errorId = "name-error";
+
+        if (value.length < 2) {
+            error = "Please enter at least 2 characters.";
+        }
+    } else if (input === emailInput) {
+        errorId = "email-error";
+
+        if (!emailPattern.test(value)) {
+            error = "Please enter a valid email address.";
+        }
+    } else if (input === messageInput) {
+        errorId = "message-error";
+
+        if (value.length === 0) {
+            error = "Please enter a message.";
+        }
+    } else {
+        return false;
+    }
+
+    showError(input, errorId, error);
+    return error === "";
+}
+
+const formFields = [nameInput, emailInput, messageInput];
+
+// Validate all fields when the form is submitted
 form.addEventListener("submit", function (event) {
     event.preventDefault();
 
-    const name = nameInput.value.trim();
-    const email = emailInput.value.trim();
-    const userMessage = messageInput.value.trim();
-
-    let isValid = true;
-
-    // Validate name
-    if (name.length < 2) {
-        showError(nameInput, "name-error", "Please enter at least 2 characters.");
-        isValid = false;
-    } else {
-        showError(nameInput, "name-error", "");
-    }
-
-    // Validate email
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    if (!emailPattern.test(email)) {
-        showError(emailInput, "email-error", "Please enter a valid email address.");
-        isValid = false;
-    } else {
-        showError(emailInput, "email-error", "");
-    }
-
-    // Validate message
-    if (userMessage.length === 0) {
-        showError(messageInput, "message-error", "Please enter a message.");
-        isValid = false;
-    } else {
-        showError(messageInput, "message-error", "");
-    }
+    const results = formFields.map(validateField);
+    const isValid = results.every(Boolean);
 
     if (isValid) {
         message.textContent =
@@ -63,13 +75,12 @@ form.addEventListener("submit", function (event) {
 
         form.reset();
 
-        // Reset validation state after a successful submission
-        [nameInput, emailInput, messageInput].forEach(function (input) {
-            input.classList.remove("input-error");
+        // Clear validation states after successful submission
+        formFields.forEach(function (input) {
+            showError(input, `${input.id}-error`, "");
             input.removeAttribute("aria-invalid");
         });
     } else {
-        // Show feedback when the form contains invalid fields
         message.textContent =
             "Please correct the highlighted fields before continuing.";
 
@@ -85,43 +96,8 @@ form.addEventListener("submit", function (event) {
     }
 });
 
-
-// REAL-TIME FORM VALIDATION
-
-
-// Validate each field while the user types
-function validateField(input) {
-    const value = input.value.trim();
-
-    if (input === nameInput) {
-        const error = value.length < 2
-            ? "Please enter at least 2 characters."
-            : "";
-
-        showError(input, "name-error", error);
-    }
-
-    if (input === emailInput) {
-        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-        const error = emailPattern.test(value)
-            ? ""
-            : "Please enter a valid email address.";
-
-        showError(input, "email-error", error);
-    }
-
-    if (input === messageInput) {
-        const error = value.length === 0
-            ? "Please enter a message."
-            : "";
-
-        showError(input, "message-error", error);
-    }
-}
-
-// Check inputs as the user types
-[nameInput, emailInput, messageInput].forEach(function (input) {
+// Validate fields as the user types
+formFields.forEach(function (input) {
     input.addEventListener("input", function () {
         validateField(input);
 
@@ -219,50 +195,69 @@ projectSort.value = getSavedOption(
 // Preserve the original project order
 const originalOrder = Array.from(projectCards);
 
-// Show projects matching both the category and search keyword
+
+// Sort project cards only when sorting changes
+function sortProjects() {
+    const sortValue = projectSort.value;
+    const sortedCards = Array.from(originalOrder);
+
+    const getTitle = card =>
+        card.querySelector("h3").textContent.trim();
+
+    if (sortValue === "name-asc") {
+        sortedCards.sort((a, b) =>
+            getTitle(a).localeCompare(getTitle(b))
+        );
+    } else if (sortValue === "name-desc") {
+        sortedCards.sort((a, b) =>
+            getTitle(b).localeCompare(getTitle(a))
+        );
+    }
+
+    // Only reorder the DOM if the order actually changed
+    const currentOrder = Array.from(projectsGrid.children);
+
+    const orderChanged = sortedCards.some(
+        (card, index) => card !== currentOrder[index]
+    );
+
+    if (orderChanged) {
+        projectsGrid.append(...sortedCards);
+    }
+}
+
+// Filter projects by category and search keyword
 function updateProjects() {
     const searchText = projectSearch.value.trim().toLowerCase();
-    const sortValue = projectSort.value;
-
-    const getTitle = card => card.querySelector("h3").textContent.trim();
-
-    const sorters = {
-        "name-asc": (a, b) => getTitle(a).localeCompare(getTitle(b)),
-        "name-desc": (a, b) => getTitle(b).localeCompare(getTitle(a)),
-    };
-
-    const sortedCards = Array.from(originalOrder);
-    sortedCards.sort(sorters[sortValue] || (() => 0));
-
-    // Apply sorted order to the DOM
-    projectsGrid.append(...sortedCards);
-
-    // Apply category filtering and keyword search
     let visibleCount = 0;
 
-    sortedCards.forEach(card => {
-        const text = (
-            card.querySelector("h3").textContent + " " +
-            card.querySelector("p").textContent
-        ).toLowerCase();
+    originalOrder.forEach(function (card) {
+        const title = card.querySelector("h3").textContent;
+        const description = card.querySelector("p").textContent;
+
+        const projectText =
+            (title + " " + description).toLowerCase();
 
         const matchesCategory =
-            currentFilter === "all" || card.dataset.category === currentFilter;
-        const matchesSearch = text.includes(searchText);
+            currentFilter === "all" ||
+            card.dataset.category === currentFilter;
+
+        const matchesSearch = projectText.includes(searchText);
         const shouldShow = matchesCategory && matchesSearch;
 
-        card.hidden = !shouldShow;
-        card.classList.remove("filter-animate");
+        // Update visibility only when necessary
+        if (card.hidden !== !shouldShow) {
+            card.hidden = !shouldShow;
+        }
 
         if (shouldShow) {
             visibleCount++;
-            void card.offsetWidth;
-            card.classList.add("filter-animate");
         }
     });
 
     noProjects.hidden = visibleCount !== 0;
 }
+
 
 // Handle category filter buttons
 filterButtons.forEach(function (button) {
@@ -290,6 +285,7 @@ projectSearch.addEventListener("input", updateProjects);
 // Update projects when the sorting option changes
 projectSort.addEventListener("change", function () {
     localStorage.setItem("portfolio-sort", projectSort.value);
+    sortProjects();
     updateProjects();
 });
 
@@ -319,7 +315,8 @@ filterButtons.forEach(function (button) {
     button.setAttribute("aria-pressed", String(isActive));
 });
 
-// Display all projects when the page loads
+// Restore sorting and filtering when the page loads
+sortProjects();
 updateProjects();
 
 // GITHUB API INTEGRATION
