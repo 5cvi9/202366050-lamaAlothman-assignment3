@@ -256,7 +256,7 @@ function updateProjects() {
 
         if (shouldShow) {
             visibleCount++;
-            void card.offsetWidth; 
+            void card.offsetWidth;
             card.classList.add("filter-animate");
         }
     });
