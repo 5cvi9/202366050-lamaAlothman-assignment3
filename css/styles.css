@@ -24,7 +24,7 @@
 
 html {
     scroll-behavior: smooth;
-    scroll-padding-top: 75px;
+    scroll-padding-top: 100px;
 }
 
 body {
@@ -654,4 +654,30 @@ body:not(.light-mode) form .input-error {
 /* Footer */
 body:not(.light-mode) footer {
     background: #0a1a22;
+}
+/* ========================================
+   ADDITIONAL THEME IMPROVEMENTS
+======================================== */
+
+/* Make GitHub section consistent with both themes */
+#github-repositories {
+    background: var(--background);
+}
+
+/* Ensure headings are readable in dark mode */
+body:not(.light-mode) #github-repositories h2 {
+    color: var(--text);
+}
+
+/* Keep form text readable in light mode */
+body.light-mode form input,
+body.light-mode form textarea {
+    color: var(--text);
+}
+
+/* Accessible keyboard navigation */
+a:focus-visible,
+button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
 }
