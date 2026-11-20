@@ -2,11 +2,6 @@
 // CONTACT FORM VALIDATION
 // ========================================
 
-
-// ========================================
-// CONTACT FORM VALIDATION
-// ========================================
-
 const form = document.getElementById("contact-form");
 const message = document.getElementById("form-message");
 
