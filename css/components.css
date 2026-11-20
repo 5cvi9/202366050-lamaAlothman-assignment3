@@ -1,0 +1,195 @@
+/* PROJECT FILTERS */
+
+.project-filters {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 30px;
+}
+
+.filter-btn {
+    padding: 10px 18px;
+    border: 1px solid var(--border);
+    border-radius: 25px;
+    background: var(--surface);
+    color: var(--teal);
+    font: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.filter-btn:hover,
+.filter-btn.active {
+    background: var(--teal);
+    color: white;
+}
+
+/* Ensure filtered-out cards stay hidden despite other display rules */
+.project-card[hidden] {
+    display: none;
+}
+/* FORM VALIDATION AND FEEDBACK */
+
+/* Error text displayed below invalid fields */
+.error-message {
+    color: #b42318;
+    font-size: 0.8rem;
+    line-height: 1.4;
+}
+
+/* Highlight invalid inputs */
+form .input-error {
+    border: 2px solid #b42318;
+}
+
+/* Confirmation message after valid submission */
+#form-message.success-message {
+    color: #286b4b;
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+/* Keep validation feedback readable */
+form .input-error:focus {
+    outline: 2px solid #b42318;
+    outline-offset: 2px;
+}
+/* PROJECT FILTER ANIMATION*/
+
+/* Smoothly reveal projects after filtering */
+.project-card.filter-animate {
+    animation: projectFadeIn 0.35s ease-out both;
+}
+
+@keyframes projectFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Respect users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .project-card.filter-animate {
+        animation: none;
+    }
+}
+/* FORM FEEDBACK ANIMATION */
+
+#form-message.success-message {
+    animation: feedbackFadeIn 0.35s ease-out;
+}
+
+@keyframes feedbackFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    #form-message.success-message {
+        animation: none;
+    }
+}
+/* ERROR HANDLING AND USER FEEDBACK */
+
+#form-message.form-error {
+    color: #b42318;
+    font-weight: 600;
+    margin-top: 10px;
+}
+
+/* Smooth feedback when an input becomes invalid */
+form input,
+form textarea {
+    transition: border-color 0.2s ease, outline-color 0.2s ease;
+}
+/* PROJECT SEARCH AND EMPTY STATE */
+
+.project-search {
+    max-width: 420px;
+    margin: 0 auto 30px;
+}
+
+.project-search label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--teal);
+    font-weight: 600;
+}
+
+.project-search input {
+    width: 100%;
+    padding: 12px 15px;
+
+    color: var(--text);
+    background: var(--surface);
+
+    border: 1px solid var(--border);
+    border-radius: 8px;
+
+    font: inherit;
+}
+
+.project-search input:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+/* Message displayed when no projects match */
+.empty-state {
+    padding: 35px 20px;
+    color: var(--muted);
+    background: var(--surface);
+
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+
+    text-align: center;
+}
+
+.empty-state[hidden] {
+    display: none;
+}
+
+.empty-state button {
+    margin-top: 15px;
+    padding: 10px 18px;
+
+    color: white;
+    background: var(--teal);
+
+    border: none;
+    border-radius: 6px;
+
+    font: inherit;
+    cursor: pointer;
+}
+
+.empty-state button:hover {
+    background: var(--green);
+}
+/* DARK MODE FILTER BUTTONS */
+
+body:not(.light-mode) .filter-btn.active,
+body:not(.light-mode) .filter-btn:hover {
+    color: #10232c;
+}
+
+body:not(.light-mode) .empty-state button {
+    color: #10232c;
+}
